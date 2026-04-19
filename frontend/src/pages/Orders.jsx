@@ -16,9 +16,7 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     status: "",
-    customerName: "",
-    phoneNumber: "",
-    garmentType: "",
+    search: "",
   });
   const [pagination, setPagination] = useState({ page: 1, pages: 1 });
 
@@ -31,9 +29,7 @@ const Orders = () => {
       setLoading(true);
       const params = { page: pagination.page, limit: 10 };
       if (filters.status) params.status = filters.status;
-      if (filters.customerName) params.customerName = filters.customerName;
-      if (filters.phoneNumber) params.phoneNumber = filters.phoneNumber;
-      if (filters.garmentType) params.garmentType = filters.garmentType;
+      if (filters.search) params.search = filters.search;
 
       const res = await API.get("/orders", { params });
       setOrders(res.data.data);
@@ -70,7 +66,7 @@ const Orders = () => {
   };
 
   const clearFilters = () => {
-    setFilters({ status: "", customerName: "", phoneNumber: "", garmentType: "" });
+    setFilters({ status: "", search: "" });
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
@@ -85,27 +81,16 @@ const Orders = () => {
 
       {/* Filters */}
       <div className="filters-bar">
-        <input
-          type="text"
-          name="customerName"
-          placeholder="Search by name..."
-          value={filters.customerName}
-          onChange={handleFilterChange}
-        />
-        <input
-          type="text"
-          name="phoneNumber"
-          placeholder="Search by phone..."
-          value={filters.phoneNumber}
-          onChange={handleFilterChange}
-        />
-        <input
-          type="text"
-          name="garmentType"
-          placeholder="Search by garment..."
-          value={filters.garmentType}
-          onChange={handleFilterChange}
-        />
+        <div className="search-wrapper">
+          <input
+            type="text"
+            name="search"
+            placeholder="Search by name, phone, or garment..."
+            value={filters.search}
+            onChange={handleFilterChange}
+            className="search-input"
+          />
+        </div>
         <select name="status" value={filters.status} onChange={handleFilterChange}>
           <option value="">All Status</option>
           {STATUS_FLOW.map((s) => (

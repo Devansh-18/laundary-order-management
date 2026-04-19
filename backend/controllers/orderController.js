@@ -14,10 +14,30 @@ export const createOrder = async (req, res) => {
       });
     }
 
+    // Calculate totalPrice for each item and the overall totalAmount
+    let totalAmount = 0;
+    const processedItems = items.map((item) => {
+      const quantity = item.quantity || 0;
+      const pricePerItem = item.pricePerItem || 0;
+      const totalPrice = quantity * pricePerItem;
+      totalAmount += totalPrice;
+      
+      return {
+        ...item,
+        totalPrice
+      };
+    });
+
+    // Generate Order ID
+    const count = await Order.countDocuments();
+    const orderId = `ORD-${String(count + 1).padStart(5, "0")}`;
+
     const order = await Order.create({
+      orderId,
       customerName,
       phoneNumber,
-      items,
+      items: processedItems,
+      totalAmount,
       estimatedDeliveryDate: estimatedDeliveryDate || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // Default: 3 days from now
       createdBy: req.user._id,
     });
@@ -96,7 +116,7 @@ export const updateOrderStatus = async (req, res) => {
 // @access  Private
 export const getOrders = async (req, res) => {
   try {
-    const { status, customerName, phoneNumber, garmentType, page = 1, limit = 20 } = req.query;
+    const { status, search, page = 1, limit = 20 } = req.query;
 
     const filter = {};
 
@@ -105,19 +125,14 @@ export const getOrders = async (req, res) => {
       filter.status = status.toUpperCase();
     }
 
-    // Filter by customer name (case-insensitive partial match)
-    if (customerName) {
-      filter.customerName = { $regex: customerName, $options: "i" };
-    }
-
-    // Filter by phone number (partial match)
-    if (phoneNumber) {
-      filter.phoneNumber = { $regex: phoneNumber, $options: "i" };
-    }
-
-    // Search by garment type within items array
-    if (garmentType) {
-      filter["items.garmentType"] = { $regex: garmentType, $options: "i" };
+    // Unified search across customer name, phone, and garment type
+    if (search) {
+      const searchRegex = { $regex: search, $options: "i" };
+      filter.$or = [
+        { customerName: searchRegex },
+        { phoneNumber: searchRegex },
+        { "items.garmentType": searchRegex },
+      ];
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);

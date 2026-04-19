@@ -22,11 +22,7 @@ const orderItemSchema = new mongoose.Schema({
   },
 });
 
-// Auto-calculate totalPrice for each item
-orderItemSchema.pre("validate", function (next) {
-  this.totalPrice = this.quantity * this.pricePerItem;
-  next();
-});
+
 
 const STATUS_FLOW = ["RECEIVED", "PROCESSING", "READY", "DELIVERED"];
 
@@ -76,17 +72,7 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-// Auto-generate orderId and calculate totalAmount
-orderSchema.pre("save", async function (next) {
-  // Generate order ID on creation
-  if (this.isNew) {
-    const count = await mongoose.model("Order").countDocuments();
-    this.orderId = `ORD-${String(count + 1).padStart(5, "0")}`;
-  }
-  // Calculate total amount from items
-  this.totalAmount = this.items.reduce((sum, item) => sum + item.totalPrice, 0);
-  next();
-});
+
 
 // Static: valid status transitions
 orderSchema.statics.STATUS_FLOW = STATUS_FLOW;

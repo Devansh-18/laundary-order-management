@@ -138,8 +138,10 @@ const NewOrder = () => {
                 <input
                   type="number"
                   min="1"
-                  value={item.quantity}
+                  value={item.quantity === 0 ? "" : item.quantity}
                   onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                  onFocus={(e) => e.target.select()}
+                  placeholder="0"
                   required
                 />
               </div>
@@ -148,8 +150,10 @@ const NewOrder = () => {
                 <input
                   type="number"
                   min="0"
-                  value={item.pricePerItem}
+                  value={item.pricePerItem === 0 ? "" : item.pricePerItem}
                   onChange={(e) => updateItem(index, "pricePerItem", e.target.value)}
+                  onFocus={(e) => e.target.select()}
+                  placeholder="0"
                   required
                 />
               </div>
